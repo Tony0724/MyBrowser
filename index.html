@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBrowser</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #tab-bar { display: flex; gap: 5px; background: #ddd; padding: 5px; }
+        .tab { padding: 5px 10px; background: white; border: 1px solid #999; cursor: pointer; }
+        .close-btn { margin-left: 5px; color: red; cursor: pointer; }
+        iframe { width: 100%; height: 90vh; border: none; }
+    </style>
+</head>
+<body>
+    <div id="tab-bar">
+        <button onclick="addTab('https://www.naver.com')">+ 새 탭</button>
+    </div>
+    <div id="tab-content">
+        <webview src="https://www.naver.com"></webview>
+    </div>
+
+    <script>
+        let tabCount = 0;
+        let activeTab = null;
+        const tabBar = document.getElementById("tab-bar");
+        const browserFrame = document.getElementById("browser-frame");
+
+        function addTab(url) {
+            const tabId = `tab-${++tabCount}`;
+            const tab = document.createElement("div");
+            tab.classList.add("tab");
+            tab.id = tabId;
+            tab.innerHTML = `탭 ${tabCount} <span class="close-btn" onclick="closeTab('${tabId}')">x</span>`;
+            tab.onclick = () => switchTab(url, tabId);
+            tabBar.appendChild(tab);
+            switchTab(url, tabId);
+        }
+
+        function switchTab(url, tabId) {
+            browserFrame.src = url;
+            activeTab = tabId;
+        }
+
+        function closeTab(tabId) {
+            const tab = document.getElementById(tabId);
+            if (tab) tab.remove();
+            if (tabId === activeTab) {
+                browserFrame.src = "about:blank";
+                activeTab = null;
+            }
+
+            if (tabBar.children.length === 1) {
+                window.close();
+            }
+        }
+
+        window.electronAPI.onAddTab(addTab);
+        window.electronAPI.onRemoveTab(closeTab);
+    </script>
+</body>
+</html>
